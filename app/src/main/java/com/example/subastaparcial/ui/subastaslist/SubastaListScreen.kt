@@ -1,9 +1,10 @@
 package com.example.subastaparcial.ui.subastaslist
 
-import android.graphics.BitmapFactory
 import android.util.Base64
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +25,7 @@ import com.example.subastaparcial.viewmodel.SubastaListViewModel
 @Composable
 fun SubastaListScreen(
     navController: NavController,
-    viewModel: SubastaListViewModel = viewModel()
+    viewModel: SubastaListViewModel
 ) {
     val subastas by viewModel.subastas.collectAsState()
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
@@ -33,7 +34,11 @@ fun SubastaListScreen(
         viewModel.cargarSubastas()
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text(
             text = "Subastas",
             style = MaterialTheme.typography.headlineSmall,
@@ -50,7 +55,7 @@ fun SubastaListScreen(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(onClick = { /* search already applied via filter */ }) {
+            Button(onClick = { /* filtro ya aplicado */ }) {
                 Text("Search")
             }
         }
@@ -80,12 +85,16 @@ fun SubastaListScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            viewModel.subastaSeleccionada = subasta
+                            navController.navigate("detalleSubasta")
+                        }
                         .border(1.dp, Color.LightGray)
                         .padding(8.dp)
                 ) {
                     Text(subasta.nombre, modifier = Modifier.weight(1f))
                     Text("$${subasta.ofertaMinima}", modifier = Modifier.weight(1f))
-                    Text("${subasta.inscritos}", modifier = Modifier.weight(1f)) // debes tener este campo
+                    Text("${subasta.inscritos}", modifier = Modifier.weight(1f))
                     Text(subasta.fechaSubasta, modifier = Modifier.weight(1f))
                 }
             }

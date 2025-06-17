@@ -15,6 +15,9 @@ class SubastaListViewModel : ViewModel() {
     private val _subastas = MutableStateFlow<List<Subasta>>(emptyList())
     val subastas: StateFlow<List<Subasta>> = _subastas
 
+    // ✅ Subasta seleccionada que se usará en DetalleSubastaScreen
+    var subastaSeleccionada: Subasta? = null
+
     fun cargarSubastas() {
         viewModelScope.launch {
             _subastas.value = repository.obtenerSubastas()
