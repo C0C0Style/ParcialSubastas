@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="SubastaParcial.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-20T12:46:11.648233800Z">
+        <DropdownSelection timestamp="2025-06-25T02:30:36.812204200Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\LENOVO\.android\avd\Pixel_7_Pro_API_VanillaIceCream.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=ABSGBB4C23900778" />
             </handle>
           </Target>
         </DropdownSelection>
