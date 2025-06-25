@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subastaparcial.data.model.Puja
 import com.example.subastaparcial.data.model.Subasta
+import com.example.subastaparcial.data.repository.SubastaRepository
 import com.example.subastaparcial.viewmodel.PujaViewModel
 
 @Composable
@@ -34,6 +35,9 @@ fun DetalleSubastaScreen(
     viewModel: PujaViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
+    var subastaActual by remember { mutableStateOf(subasta) }
+
 
     var numeroSeleccionado by remember { mutableStateOf<Int?>(null) }
     var valorPuja by remember { mutableStateOf("") }
@@ -52,6 +56,13 @@ fun DetalleSubastaScreen(
             it.onSuccess {
                 Toast.makeText(context, "✅ Puja enviada correctamente", Toast.LENGTH_SHORT).show()
                 viewModel.cargarPujas(subasta.id) // Recargar lista
+
+                // 👉 Recargar la subasta para obtener el nuevo valor de 'inscritos'
+                val subastaRepository = SubastaRepository() // O injecta si usas Hilt
+                val actualizada = subastaRepository.obtenerSubastaPorId(subasta.id)
+                actualizada?.let { subastaNueva ->
+                    subastaActual = subastaNueva
+                }
             }.onFailure { error ->
                 Toast.makeText(context, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
@@ -74,10 +85,10 @@ fun DetalleSubastaScreen(
                 .border(1.dp, Color.LightGray)
                 .padding(12.dp)
         ) {
-            Text("Nombre: ${subasta.nombre}")
-            Text("Fecha: ${subasta.fechaSubasta}")
-            Text("Oferta mínima: $${subasta.ofertaMinima}")
-            Text("Inscritos: ${subasta.inscritos}")
+            Text("Nombre: ${subastaActual.nombre}")
+            Text("Fecha: ${subastaActual.fechaSubasta}")
+            Text("Oferta mínima: $${subastaActual.ofertaMinima}")
+            Text("Inscritos: ${subastaActual.inscritos}")
         }
 
         subasta.imagen?.let {

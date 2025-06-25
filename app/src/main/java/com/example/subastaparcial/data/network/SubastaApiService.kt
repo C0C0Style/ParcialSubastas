@@ -38,4 +38,7 @@ interface SubastaApiService {
         @Path("subastaId") subastaId: Int
     ): Response<List<Puja>>
 
+    @GET("subastas/{id}")
+    suspend fun obtenerSubastaPorId(@Path("id") id: Int): Subasta
+
 }
