@@ -22,14 +22,41 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subastaparcial.data.model.Puja
 import com.example.subastaparcial.data.model.Subasta
+import com.example.subastaparcial.viewmodel.PujaViewModel
 
 @Composable
-fun DetalleSubastaScreen(subasta: Subasta, onBack: () -> Unit = {}) {
+fun DetalleSubastaScreen(
+    subasta: Subasta,
+    onBack: () -> Unit = {},
+    viewModel: PujaViewModel = viewModel()
+) {
     val context = LocalContext.current
 
     var numeroSeleccionado by remember { mutableStateOf<Int?>(null) }
     var valorPuja by remember { mutableStateOf("") }
+
+    val estadoPuja by viewModel.estadoPuja.collectAsState()
+    val pujas by viewModel.pujasExistentes.collectAsState()
+
+    // Cargar las pujas existentes al iniciar
+    LaunchedEffect(subasta.id) {
+        viewModel.cargarPujas(subasta.id)
+    }
+
+    // Mostrar notificaciones según resultado de envío
+    LaunchedEffect(estadoPuja) {
+        estadoPuja?.let {
+            it.onSuccess {
+                Toast.makeText(context, "✅ Puja enviada correctamente", Toast.LENGTH_SHORT).show()
+                viewModel.cargarPujas(subasta.id) // Recargar lista
+            }.onFailure { error ->
+                Toast.makeText(context, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -77,18 +104,30 @@ fun DetalleSubastaScreen(subasta: Subasta, onBack: () -> Unit = {}) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items((1..100).toList()) { numero ->
+                val pujaExistente = pujas.find { it.numero == numero }
                 val seleccionado = numero == numeroSeleccionado
+                val color = when {
+                    seleccionado -> MaterialTheme.colorScheme.primary
+                    pujaExistente != null -> Color.Red
+                    else -> Color.Gray
+                }
+
                 Box(
                     modifier = Modifier
                         .size(34.dp)
-                        .border(
-                            1.dp,
-                            if (seleccionado) MaterialTheme.colorScheme.primary else Color.Gray
-                        )
-                        .clickable { numeroSeleccionado = numero },
+                        .border(1.dp, color)
+                        .clickable {
+                            numeroSeleccionado = numero
+                            valorPuja = pujaExistente?.valor ?: ""
+                            println("🟡 Número seleccionado: $numero, Valor: ${pujaExistente?.valor}")
+                        },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("$numero", fontSize = 12.sp)
+                    Text(
+                        "$numero",
+                        fontSize = 12.sp,
+                        color = color
+                    )
                 }
             }
         }
@@ -107,14 +146,14 @@ fun DetalleSubastaScreen(subasta: Subasta, onBack: () -> Unit = {}) {
         ) {
             Button(onClick = {
                 if (numeroSeleccionado == null || valorPuja.isBlank()) {
-                    Toast.makeText(context, "Completa los campos", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "⚠️ Completa los campos", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(
-                        context,
-                        "Puja guardada para número $numeroSeleccionado",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    // lógica para guardar
+                    val nuevaPuja = Puja(
+                        subastaId = subasta.id,
+                        numero = numeroSeleccionado!!,
+                        valor = valorPuja
+                    )
+                    viewModel.guardarPujaDetectando(nuevaPuja)
                 }
             }) {
                 Text("Guardar")

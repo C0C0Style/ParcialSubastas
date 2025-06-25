@@ -79,13 +79,77 @@ app.post('/pujas', (req, res) => {
         return res.status(400).json({ error: 'Puja incompleta' });
     }
 
-    pujas.push(puja);
-    guardarPujasEnArchivo();
-    console.log('✅ Puja recibida:', puja);
+    // Verificar si ya existe una puja con ese subastaId y numero
+    const indexExistente = pujas.findIndex(p => 
+        p.subastaId == puja.subastaId && p.numero == puja.numero
+    );
 
-    res.status(201).json({ mensaje: 'Puja recibida', puja });
+    if (indexExistente !== -1) {
+        pujas[indexExistente].valor = puja.valor;
+        console.log('🔄 Puja actualizada:', pujas[indexExistente]);
+    } else {
+        pujas.push(puja);
+        console.log('✅ Puja creada:', puja);
+    }
+
+    guardarPujasEnArchivo();
+
+    // 👉 Recalcular inscritos únicos para esta subasta
+    const numerosUnicos = pujas
+        .filter(p => p.subastaId == puja.subastaId)
+        .map(p => p.numero);
+
+    const numerosDistintos = [...new Set(numerosUnicos)];
+
+    const subasta = subastas.find(s => s.id == puja.subastaId);
+    if (subasta) {
+        subasta.inscritos = numerosDistintos.length;
+        guardarSubastasEnArchivo();
+    }
+
+    res.status(200).json({ mensaje: 'Puja guardada', puja });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor escuchando en http://0.0.0.0:${PORT}`);
 });
+
+// PUT /pujas/:subastaId/:numero
+app.put('/pujas/:subastaId/:numero', (req, res) => {
+    const { subastaId, numero } = req.params;
+    const nuevaPuja = req.body;
+
+    const index = pujas.findIndex(p => 
+        p.subastaId == subastaId && p.numero == numero
+    );
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Puja no encontrada' });
+    }
+
+    pujas[index] = { ...pujas[index], ...nuevaPuja };
+    guardarPujasEnArchivo();
+    res.json({ mensaje: 'Puja actualizada', puja: pujas[index] });
+});
+
+// GET /pujas/subasta/:subastaId
+app.get('/pujas/subasta/:subastaId', (req, res) => {
+    const { subastaId } = req.params;
+    const pujasSubasta = pujas.filter(p => p.subastaId == subastaId);
+    res.json(pujasSubasta);
+});
+
+// GET /pujas/:subastaId/:numero
+app.get('/pujas/:subastaId/:numero', (req, res) => {
+    const { subastaId, numero } = req.params;
+    const puja = pujas.find(p => p.subastaId == subastaId && p.numero == numero);
+
+    if (!puja) {
+        return res.status(404).json({ error: 'No encontrada' });
+    }
+
+    res.json(puja);
+});
+
+
+
