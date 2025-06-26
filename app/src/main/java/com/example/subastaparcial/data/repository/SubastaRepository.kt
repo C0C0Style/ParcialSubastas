@@ -27,4 +27,14 @@ class SubastaRepository {
             false
         }
     }
+
+    suspend fun obtenerSubastaPorId(id: Int): Subasta? {
+        return try {
+            RetrofitInstance.api.obtenerSubastaPorId(id)
+        } catch (e: Exception) {
+            Log.e("SubastaRepository", "Error al obtener subasta por ID: ${e.message}")
+            null
+        }
+    }
+
 }

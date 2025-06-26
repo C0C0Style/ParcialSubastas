@@ -1,0 +1,97 @@
+[
+  {
+    "numero": 1,
+    "subastaId": 1,
+    "valor": "40000"
+  },
+  {
+    "numero": 2,
+    "subastaId": 1,
+    "valor": "40000"
+  },
+  {
+    "numero": 3,
+    "subastaId": 1,
+    "valor": "40000"
+  },
+  {
+    "numero": 4,
+    "subastaId": 1,
+    "valor": "20000"
+  },
+  {
+    "numero": 5,
+    "subastaId": 1,
+    "valor": "100000"
+  },
+  {
+    "numero": 6,
+    "subastaId": 1,
+    "valor": "50000"
+  },
+  {
+    "numero": 7,
+    "subastaId": 1,
+    "valor": "70000"
+  },
+  {
+    "numero": 8,
+    "subastaId": 1,
+    "valor": "80000"
+  },
+  {
+    "numero": 9,
+    "subastaId": 1,
+    "valor": "90000"
+  },
+  {
+    "numero": 10,
+    "subastaId": 1,
+    "valor": "10000"
+  },
+  {
+    "numero": 11,
+    "subastaId": 1,
+    "valor": "110000"
+  },
+  {
+    "numero": 12,
+    "subastaId": 1,
+    "valor": "12000"
+  },
+  {
+    "numero": 13,
+    "subastaId": 1,
+    "valor": "13000"
+  },
+  {
+    "numero": 14,
+    "subastaId": 1,
+    "valor": "14000"
+  },
+  {
+    "numero": 15,
+    "subastaId": 1,
+    "valor": "16000"
+  },
+  {
+    "numero": 16,
+    "subastaId": 1,
+    "valor": "16000"
+  },
+  {
+    "numero": 17,
+    "subastaId": 1,
+    "valor": "18000"
+  },
+  {
+    "numero": 18,
+    "subastaId": 1,
+    "valor": "18000"
+  },
+  {
+    "numero": 19,
+    "subastaId": 1,
+    "valor": "19000"
+  }
+]
