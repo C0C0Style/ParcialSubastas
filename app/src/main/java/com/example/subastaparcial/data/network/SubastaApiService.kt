@@ -5,6 +5,7 @@ import com.example.subastaparcial.data.model.Subasta
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -40,5 +41,11 @@ interface SubastaApiService {
 
     @GET("subastas/{id}")
     suspend fun obtenerSubastaPorId(@Path("id") id: Int): Subasta
+
+    @DELETE("pujas/{subastaId}/{numero}")
+    suspend fun eliminarPuja(
+        @Path("subastaId") subastaId: Int,
+        @Path("numero") numero: Int
+    ): Response<Unit>
 
 }

@@ -178,5 +178,32 @@ app.get('/pujas/:subastaId/:numero', (req, res) => {
     res.json(puja);
 });
 
+// DELETE /pujas/:subastaId/:numero
+app.delete('/pujas/:subastaId/:numero', (req, res) => {
+    const { subastaId, numero } = req.params;
+    const index = pujas.findIndex(p => p.subastaId == subastaId && p.numero == numero);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Puja no encontrada' });
+    }
+
+    pujas.splice(index, 1); // Eliminar la puja
+    guardarPujasEnArchivo();
+
+    // Recalcular inscritos
+    const numerosUnicos = pujas
+        .filter(p => Number(p.subastaId) === Number(subastaId))
+        .map(p => Number(p.numero));
+
+    const numerosDistintos = [...new Set(numerosUnicos)];
+
+    const subasta = subastas.find(s => Number(s.id) === Number(subastaId));
+    if (subasta) {
+        subasta.inscritos = numerosDistintos.length;
+        guardarSubastasEnArchivo();
+    }
+
+    res.json({ mensaje: 'Puja eliminada correctamente' });
+});
 
 

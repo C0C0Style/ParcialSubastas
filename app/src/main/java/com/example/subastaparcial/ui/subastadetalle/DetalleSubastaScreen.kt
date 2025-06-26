@@ -41,9 +41,16 @@ fun DetalleSubastaScreen(
 
     var numeroSeleccionado by remember { mutableStateOf<Int?>(null) }
     var valorPuja by remember { mutableStateOf("") }
+    var finalizada by remember { mutableStateOf(false) }
+    var mostrarDialogoGanador by remember { mutableStateOf(false) }
+    var mensajeGanador by remember { mutableStateOf("") }
+
+
 
     val estadoPuja by viewModel.estadoPuja.collectAsState()
     val pujas by viewModel.pujasExistentes.collectAsState()
+    val estadoEliminacion by viewModel.estadoEliminacion.collectAsState()
+
 
     // Cargar las pujas existentes al iniciar
     LaunchedEffect(subasta.id) {
@@ -65,6 +72,24 @@ fun DetalleSubastaScreen(
                 }
             }.onFailure { error ->
                 Toast.makeText(context, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    LaunchedEffect(estadoEliminacion) {
+        estadoEliminacion?.let {
+            it.onSuccess {
+                Toast.makeText(context, "✅ Puja eliminada correctamente", Toast.LENGTH_SHORT).show()
+                numeroSeleccionado = null
+                valorPuja = ""
+                // También puedes actualizar la subasta si quieres
+                val subastaRepository = SubastaRepository()
+                val actualizada = subastaRepository.obtenerSubastaPorId(subasta.id)
+                actualizada?.let { subastaNueva ->
+                    subastaActual = subastaNueva
+                }
+            }.onFailure { error ->
+                Toast.makeText(context, "❌ Error al eliminar: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -127,11 +152,9 @@ fun DetalleSubastaScreen(
                     modifier = Modifier
                         .size(34.dp)
                         .border(1.dp, color)
-                        .clickable {
+                        .clickable(enabled = !finalizada) {
                             numeroSeleccionado = numero
-                            valorPuja = pujaExistente?.valor ?: ""
-                            println("🟡 Número seleccionado: $numero, Valor: ${pujaExistente?.valor}")
-                        },
+                            valorPuja = pujaExistente?.valor ?: ""},
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -148,7 +171,8 @@ fun DetalleSubastaScreen(
             onValueChange = { valorPuja = it },
             label = { Text("Valor de Puja") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !finalizada
         )
 
         Row(
@@ -171,21 +195,49 @@ fun DetalleSubastaScreen(
             }
 
             Button(onClick = {
-                Toast.makeText(context, "Subasta finalizada", Toast.LENGTH_SHORT).show()
+                if (pujas.isEmpty()) {
+                    Toast.makeText(context, "❌ No hay pujas aún", Toast.LENGTH_SHORT).show()
+                } else {
+                    finalizada = true
+                    val pujaGanadora = pujas.maxByOrNull { it.valor.toDoubleOrNull() ?: 0.0 }
+                    pujaGanadora?.let {
+                        mensajeGanador = "🎉 Felicidades, el ganador es el número ${it.numero} con el valor de $${it.valor}"
+                        mostrarDialogoGanador = true
+                    }
+                }
             }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF5350))) {
                 Text("Finalizar")
             }
 
-            Button(onClick = {
-                Toast.makeText(context, "Subasta eliminada", Toast.LENGTH_SHORT).show()
-            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))) {
-                Text("Eliminar")
+            if (numeroSeleccionado != null && pujas.any { it.numero == numeroSeleccionado }) {
+                Button(
+                    onClick = {
+                        viewModel.eliminarPuja(subasta.id, numeroSeleccionado!!)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                ) {
+                    Text("Eliminar")
+                }
             }
         }
 
-        TextButton(onClick = onBack) {
-            Text("← Volver")
+        if (mostrarDialogoGanador) {
+            AlertDialog(
+                onDismissRequest = { mostrarDialogoGanador = false },
+                confirmButton = {
+                    Button(onClick = { mostrarDialogoGanador = false }) {
+                        Text("Cerrar")
+                    }
+                },
+                title = { Text("Ganador de la subasta") },
+                text = { Text(mensajeGanador) }
+            )
         }
+
+
+        /*TextButton(onClick = onBack) {
+            Text("← Volver")
+        }*/
     }
 }
 

@@ -18,6 +18,9 @@ class PujaViewModel : ViewModel() {
     private val _pujasExistentes = MutableStateFlow<List<Puja>>(emptyList())
     val pujasExistentes = _pujasExistentes.asStateFlow()
 
+    private val _estadoEliminacion = MutableStateFlow<Result<Unit>?>(null)
+    val estadoEliminacion = _estadoEliminacion.asStateFlow()
+
     fun guardarPuja(puja: Puja, isUpdate: Boolean) {
         viewModelScope.launch {
             try {
@@ -49,6 +52,20 @@ class PujaViewModel : ViewModel() {
             val lista = repository.obtenerPujasDeSubasta(subastaId)
             println("🟢 Pujas recibidas: $lista")
             _pujasExistentes.value = lista
+        }
+    }
+
+    fun eliminarPuja(subastaId: Int, numero: Int) {
+        viewModelScope.launch {
+            _estadoEliminacion.value = try {
+                val result = repository.eliminarPuja(subastaId, numero)
+                if (result.isSuccess) {
+                    cargarPujas(subastaId) // Recargar
+                }
+                result
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
     }
 }

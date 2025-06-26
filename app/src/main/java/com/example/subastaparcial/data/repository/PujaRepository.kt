@@ -40,4 +40,17 @@ class PujaRepository {
             emptyList()
         }
     }
+
+    suspend fun eliminarPuja(subastaId: Int, numero: Int): Result<Unit> {
+        return try {
+            val response = RetrofitInstance.api.eliminarPuja(subastaId, numero)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Error ${response.code()}: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
